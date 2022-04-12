@@ -2,14 +2,37 @@ import "./App.css";
 import Header from "./Header";
 import Content from "./Content";
 import Footer from "./Footer";
-import { useState } from 'react';
 import AddItem from "./AddItem";
 import SearchItem from './SearchItem';
+import { useState, useEffect } from 'react';
 
 function App() {
+  const API_URL ="http://localhost:3500/items"
 
-  const [items, setItems] = useState(JSON.parse(localStorage.getItem('shoppinglist')));
+  const [items, setItems] = useState([]);
+  const [newItem, setNewItem] = useState('')
+  const [search, setSearch] = useState('')
 
+  useEffect(() => {
+    const fetchItems = async () => {
+      try{
+        const response= await fetch(API_URL);
+        const listItems = await response.json();
+        setItems(listItems);
+      }catch(err){
+        console.log(err.stack)
+      }
+    }
+
+    (async () => await fetchItems())();
+  }, [])
+
+  const addItem = (item) => {
+    const id = items.length  ? items[items.length -1].id +1 : 1;
+    const myNewItem = {id , checked : false , item}
+    const listItems = [...items, myNewItem];
+    setItems(listItems);
+  }
 
   const handleCheck = (id) => {
     const listItems = items.map((item) =>
@@ -24,25 +47,9 @@ function App() {
     localStorage.setItem("Shopping list", JSON.stringify(listItems));
   };
 
-  const [newItem, setNewItem] = useState('')
-  const [search, setSearch] = useState('')
-
-  
-  const setAndSaveItems = (newItems) => {
-    setItems(newItems);
-    localStorage.setItem("shoppinglist", JSON.stringify(newItems));
-  }
-
-  const addItem = (item) => {
-    const id = items.length  ? items[items.length -1].id +1 : 1;
-    const myNewItem = {id , checked : false , item}
-    const listItems = [...items, myNewItem];
-    setAndSaveItems(listItems)
-  }
-
   const handleDelete = (id) => {
     const listItems = items.filter((item) => item.id !== id);
-    setAndSaveItems(listItems)
+    setItems(listItems);
   };
 
   const handleSubmit = (e) => {
@@ -51,6 +58,13 @@ function App() {
     addItem(newItem)
     setNewItem('');
   }
+
+
+  
+
+  
+
+  
   return (
     <div className="App">
       <Header />
